@@ -13,7 +13,7 @@ Clone the Repository
 git clone https://github.com/awatterson22/honors-thesis.git
 ```
 
-Install and Configure Arduino Cli
+Install and Configure Arduino Cli on Raspberry Pi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh

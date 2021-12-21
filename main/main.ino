@@ -79,6 +79,7 @@ float measureHeartRateVariability()
     return hrv;
 }
 
+// HEART RATE VARIABILITY SETUP
 void heartRateVariabilitySetup()
 {
     Serial.begin(9600); // For Serial Monitor
@@ -95,6 +96,74 @@ void heartRateVariabilitySetup()
     }
 }
 
+// TEMPERATURE FUNCTION
+float measureTemperature()
+{
+    display.clearDisplay();
+    display.setCursor(0, 0);
+
+    tmp117_alerts_t alerts;
+    sensors_event_t temp;
+    // Reading temp clears alerts, so read alerts first
+    tmp117.getAlerts(&alerts); // get the status of any alerts
+    tmp117.getEvent(&temp);    // get temperature
+
+    Serial.print("Temperature: ");
+    Serial.print(temp.temperature);
+    Serial.println(" degrees C");
+
+    Serial.print("High temperature alert active:");
+    if (alerts.high)
+    {
+        Serial.println("True");
+    }
+    else
+    {
+        Serial.println("False");
+    }
+
+    Serial.print("Low temperature alert active:");
+    if (alerts.low)
+    {
+        Serial.println("True");
+    }
+    else
+    {
+        Serial.println("False");
+    }
+    Serial.println("");
+
+    //       Print to OLED
+    display.print("Tmp:");
+    display.print(temp.temperature, 1);
+    display.println(" C");
+
+    display.print("HI:");
+    if (alerts.high)
+    {
+        display.print("Y");
+    }
+    else
+    {
+        display.print("N");
+    }
+
+    display.print(" LOW:");
+    if (alerts.low)
+    {
+        display.println("Y");
+    }
+    else
+    {
+        display.println("N");
+    }
+
+    display.display();
+    delay(300);
+    return temp.temperature;
+}
+
+// TEMPERATURE SETUP
 void temperatureSetup()
 {
     Serial.begin(115200);
@@ -160,70 +229,4 @@ void temperatureSetup()
 
     Serial.println("");
     Serial.println("");
-}
-
-float measureTemperature()
-{
-    display.clearDisplay();
-    display.setCursor(0, 0);
-
-    tmp117_alerts_t alerts;
-    sensors_event_t temp;
-    // Reading temp clears alerts, so read alerts first
-    tmp117.getAlerts(&alerts); // get the status of any alerts
-    tmp117.getEvent(&temp);    // get temperature
-
-    Serial.print("Temperature: ");
-    Serial.print(temp.temperature);
-    Serial.println(" degrees C");
-
-    Serial.print("High temperature alert active:");
-    if (alerts.high)
-    {
-        Serial.println("True");
-    }
-    else
-    {
-        Serial.println("False");
-    }
-
-    Serial.print("Low temperature alert active:");
-    if (alerts.low)
-    {
-        Serial.println("True");
-    }
-    else
-    {
-        Serial.println("False");
-    }
-    Serial.println("");
-
-    //       Print to OLED
-    display.print("Tmp:");
-    display.print(temp.temperature, 1);
-    display.println(" C");
-
-    display.print("HI:");
-    if (alerts.high)
-    {
-        display.print("Y");
-    }
-    else
-    {
-        display.print("N");
-    }
-
-    display.print(" LOW:");
-    if (alerts.low)
-    {
-        display.println("Y");
-    }
-    else
-    {
-        display.println("N");
-    }
-
-    display.display();
-    delay(300);
-    return temp.temperature;
 }

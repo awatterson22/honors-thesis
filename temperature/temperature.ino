@@ -63,7 +63,7 @@ void setup(void) {
   }
 
   // Threshold is set to that of a dog's temperature.
-  tmp117.setHighThreshold(38.2);
+  tmp117.setHighThreshold(39.2);
   Serial.print("High threshold: "); Serial.println(tmp117.getHighThreshold(), 1);
   tmp117.setLowThreshold(38.3);
   Serial.print("Low threshold: "); Serial.println(tmp117.getLowThreshold(), 1);

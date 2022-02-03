@@ -29,12 +29,12 @@
  */
 
 #define USE_ARDUINO_INTERRUPTS true
+// Set-up low-level interrupts for most acurate BPM math.
+#include <PulseSensorPlayground.h> // Includes the PulseSensorPlayground Library.
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TMP117.h>
 #include <Wire.h>
-// Set-up low-level interrupts for most acurate BPM math.
-#include <PulseSensorPlayground.h> // Includes the PulseSensorPlayground Library.
 
 //  Variables
 const int PulseWire = 0; // PulseSensor PURPLE WIRE connected to ANALOG PIN 0

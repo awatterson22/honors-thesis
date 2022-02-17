@@ -7,29 +7,15 @@ indicates stress.
 
 ## Installation
 
-Clone the Repository
+1. Install Arduino IDE on your computer and add the Pulse Sensor Playground Library
 
-```bash
-git clone https://github.com/awatterson22/honors-thesis.git
-```
+## Usage with Adafruit Feather
 
-Install and Configure Arduino Cli on Raspberry Pi
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-arduino-cli config init
-```
-
-## Usage on Raspberry Pi
-
-```bash
-cd honors-thesis/main
-
-~/bin/arduino-cli -b=arduino:avr:uno compile
-~/bin/arduino-cli -b arduino:avr:uno -p /dev/ttyACM0 upload
-
-arduino-cli sketch main
-```
+1. Update the utility/Interrupts.h file to uncomment the else in lines 394 and 291
+2. Connect feather to your computer using a data transfer cable (micro-USB to the port type on your computer)
+3. When plugged in, make sure that in "Arduino IDE Tools", the "Port" is selected to match the Adafruit Feather
+4. Compile
+5. Upload
 
 ## Contributing
 

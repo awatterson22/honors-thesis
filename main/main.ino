@@ -197,7 +197,7 @@ void setup()
 
    // You may need to adjust these thresholds to fit the temperature range of where the test is
    // being run to be able to see the alert status change.
-   tmp117.setHighThreshold(39.0);
+   tmp117.setHighThreshold(35.0);
    Serial.print("High threshold: ");
    Serial.println(tmp117.getHighThreshold(), 1);
    tmp117.setLowThreshold(28.5);
@@ -247,15 +247,7 @@ void setup()
 void loop()
 {
    // Temperature
-   tmp117_alerts_t alerts;
    sensors_event_t temp;
-   // Reading temp clears alerts, so read alerts first
-   tmp117.getAlerts(&alerts); // get the status of any alerts
-   tmp117.getEvent(&temp);    // get temperature
-
-   Serial.print("Temperature: ");
-   Serial.print(temp.temperature);
-   Serial.println(" degrees C");
 
    int BPM = pulseSensor.getBeatsPerMinute();
    int IBI = pulseSensor.getInterBeatIntervalMs();
@@ -288,8 +280,16 @@ void loop()
          */
          if (pulseSensor.sawStartOfBeat())
          {
+            // Reading temp clears alerts, so read alerts first
+            tmp117.getEvent(&temp); // get temperature
+
+            Serial.print("Temperature: ");
+            Serial.print(temp.temperature);
+            Serial.println(" degrees C");
+
             BPM = pulseSensor.getBeatsPerMinute();
             IBI = pulseSensor.getInterBeatIntervalMs();
+
             Serial.print("Heart Rate: ");
             Serial.println(BPM);
             if (count == 9)
@@ -305,7 +305,7 @@ void loop()
                int secondDiff = avgIBI - movingAvgIBI[8];
                int thirdDiff = avgIBI - movingAvgIBI[7];
                // Choosing 50% Threshold of Difference between the last three IBI values with the average to indicate that the HRV is decreasing - which indicates stress
-               bool stressed = firstDiff / avgIBI > 0.3 && secondDiff / avgIBI > 0.3 && thirdDiff / avgIBI > 0.3;
+               bool stressed = firstDiff / avgIBI > 0.3 && secondDiff / avgIBI > 0.3 && thirdDiff / avgIBI > 0.3 && temp.temperature < 35 && temp.temperature > 28;
                if (stressed)
                {
                   stressLevel = "Stressed";

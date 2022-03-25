@@ -106,6 +106,7 @@ String stressLevel = "Okay";
 bool DAP = false;
 int movingAvgIBI[10];
 int count = 0;
+bool DAP = false;
 
 /* WIFI SETUP */
 
@@ -309,11 +310,15 @@ void loop()
                if (stressed)
                {
                   stressLevel = "Stressed";
+                  DAP = true;
+                  // releasePheromones();
                   Serial.println("STATUS: Stress detected");
                }
                else if (!stressed)
                {
                   stressLevel = "Okay";
+                  DAP = false;
+                  // stopPheromones();
                   Serial.println("STATUS: Okay");
                }
                count = -1;
@@ -321,7 +326,7 @@ void loop()
 
             movingAvgIBI[count] = IBI;
             ++count;
-            //          sendMeasurements(BPM, IBI, temperature, stressLevel, DAP)
+            // sendMeasurements(BPM, IBI, temp.temperature, stressLevel, DAP)
          }
       }
 
@@ -388,4 +393,11 @@ void loop()
 /**************************************************************************/
 // void releasePheromones(){
 //
+// }
+
+/**************************************************************************/
+/*             Stop Release of Pheromones from Diffuser                   */
+/**************************************************************************/
+// void stopPheromones(){
+
 // }

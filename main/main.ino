@@ -39,12 +39,19 @@
 */
 #define USE_ARDUINO_INTERRUPTS false
 #include <PulseSensorPlayground.h>
-#include <movingAvg.h> 
+#include <movingAvg.h>
 #include <SPI.h>
 #include <WiFi101.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_TMP117.h>
+#include <Wire.h>
 //#include "RTClib.h"
 //
-//RTC_DS1307 rtc;
+// RTC_DS1307 rtc;
+
+/* Temperature */
+Adafruit_TMP117 tmp117;
 
 /*
 
@@ -103,15 +110,15 @@ int count = 0;
 /* WIFI SETUP */
 
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = "";        // your network SSID (name)
-char pass[] = "";    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;            // your network key Index number (needed only for WEP)
+char ssid[] = ""; // your network SSID (name)
+char pass[] = ""; // your network password (use for WPA, or use as key for WEP)
+int keyIndex = 0; // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "www.google.com";    // name address for Google (using DNS)
+// IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
+char server[] = "www.google.com"; // name address for Google (using DNS)
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
@@ -144,7 +151,8 @@ void setup()
    samplesUntilReport = SAMPLES_PER_SERIAL_SAMPLE;
 
    // Now that everything is ready, start reading the PulseSensor signal.
-   if (!pulseSensor.begin()){
+   if (!pulseSensor.begin())
+   {
       /*
          PulseSensor initialization failed,
          likely because our Arduino platform interrupts
@@ -162,43 +170,96 @@ void setup()
       }
    }
 
-//   //Configure pins for Adafruit ATWINC1500 Feather
-//   WiFi.setPins(8,7,4,2);
-//
-//   // check for the presence of the shield:
-//  if (WiFi.status() == WL_NO_SHIELD) {
-//    Serial.println("WiFi shield not present");
-//    // don't continue:
-//    while (true);
-//  }
-//
-//  // attempt to connect to WiFi network:
-//  while (status != WL_CONNECTED) {
-//    Serial.print("Attempting to connect to SSID: ");
-//    Serial.println(ssid);
-//    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-//    status = WiFi.begin(ssid, pass);
-//
-//    // wait 10 seconds for connection:
-//    delay(10000);
-//  }
-//  Serial.println("Connected to wifi");
-//  printWiFiStatus();
-//
-//  Serial.println("\nStarting connection to server...");
-//  // if you get a connection, report back via serial:
-//  if (client.connect(server, 80)) {
-//    Serial.println("connected to server");
-//  }
-   
+   // Intialize Temperature Sensor
+   if (!tmp117.begin())
+   {
+      Serial.println("Failed to find TMP117 chip");
+      while (1)
+      {
+         delay(10);
+      }
+   }
+   Serial.println("TMP117 Found!");
+
+   // Set the enable flag below to see how the low temp limit can be used as a
+   // hysteresis value that defines the acceptable range for the temperature values where
+   // the high temp alert is not active
+   // tmp117.thermAlertModeEnabled(true);
+   Serial.print("Therm mode enabled: ");
+   if (tmp117.thermAlertModeEnabled())
+   {
+      Serial.println("True");
+   }
+   else
+   {
+      Serial.println("False");
+   }
+
+   // You may need to adjust these thresholds to fit the temperature range of where the test is
+   // being run to be able to see the alert status change.
+   tmp117.setHighThreshold(39.0);
+   Serial.print("High threshold: ");
+   Serial.println(tmp117.getHighThreshold(), 1);
+   tmp117.setLowThreshold(28.5);
+   Serial.print("Low threshold: ");
+   Serial.println(tmp117.getLowThreshold(), 1);
+
+   // tmp117.interruptsActiveLow(false);
+   if (tmp117.interruptsActiveLow())
+   {
+      Serial.println("Alerts are active when the INT pin is LOW");
+   }
+   else
+   {
+      Serial.println("Alerts are active when the INT pin is HIGH");
+   }
+
+   //   //Configure pins for Adafruit ATWINC1500 Feather
+   //   WiFi.setPins(8,7,4,2);
+   //
+   //   // check for the presence of the shield:
+   //  if (WiFi.status() == WL_NO_SHIELD) {
+   //    Serial.println("WiFi shield not present");
+   //    // don't continue:
+   //    while (true);
+   //  }
+   //
+   //  // attempt to connect to WiFi network:
+   //  while (status != WL_CONNECTED) {
+   //    Serial.print("Attempting to connect to SSID: ");
+   //    Serial.println(ssid);
+   //    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+   //    status = WiFi.begin(ssid, pass);
+   //
+   //    // wait 10 seconds for connection:
+   //    delay(10000);
+   //  }
+   //  Serial.println("Connected to wifi");
+   //  printWiFiStatus();
+   //
+   //  Serial.println("\nStarting connection to server...");
+   //  // if you get a connection, report back via serial:
+   //  if (client.connect(server, 80)) {
+   //    Serial.println("connected to server");
+   //  }
 }
 
 void loop()
 {
+   // Temperature
+   tmp117_alerts_t alerts;
+   sensors_event_t temp;
+   // Reading temp clears alerts, so read alerts first
+   tmp117.getAlerts(&alerts); // get the status of any alerts
+   tmp117.getEvent(&temp);    // get temperature
+
+   Serial.print("Temperature: ");
+   Serial.print(temp.temperature);
+   Serial.println(" degrees C");
 
    int BPM = pulseSensor.getBeatsPerMinute();
-   int IBI = pulseSensor.getInterBeatIntervalMs(); 
-   
+   int IBI = pulseSensor.getInterBeatIntervalMs();
+
    /*
       See if a sample is ready from the PulseSensor.
 
@@ -227,35 +288,40 @@ void loop()
          */
          if (pulseSensor.sawStartOfBeat())
          {
-          BPM = pulseSensor.getBeatsPerMinute();
-          IBI = pulseSensor.getInterBeatIntervalMs();
-          Serial.print("Heart Rate: ");
-          Serial.println(BPM);
-          if (count == 9) {
-            // Add moving average detection for IBI here to indicate stress  
-            int sumIBI = 0;
-            for (int i = 0; i < 10; i++) {
-              sumIBI += movingAvgIBI[i];
-             }
-            int avgIBI = sumIBI / 10;
-            int firstDiff = avgIBI - movingAvgIBI[9];
-            int secondDiff = avgIBI - movingAvgIBI[8];
-            int thirdDiff = avgIBI - movingAvgIBI[7];
-            // Choosing 50% Threshold of Difference between the last three IBI values with the average to indicate that the HRV is decreasing - which indicates stress
-            bool stressed = firstDiff/avgIBI > 0.5 && secondDiff/avgIBI > 0.5 && thirdDiff/avgIBI > 0.5;
-            if (stressed) {
-              stressLevel = "Stressed";
-              Serial.println("STATUS: Stress detected");       
-            } else if (!stressed){
-              stressLevel = "Okay";
-              Serial.println("STATUS: Okay");
+            BPM = pulseSensor.getBeatsPerMinute();
+            IBI = pulseSensor.getInterBeatIntervalMs();
+            Serial.print("Heart Rate: ");
+            Serial.println(BPM);
+            if (count == 9)
+            {
+               // Add moving average detection for IBI here to indicate stress
+               int sumIBI = 0;
+               for (int i = 0; i < 10; i++)
+               {
+                  sumIBI += movingAvgIBI[i];
+               }
+               int avgIBI = sumIBI / 10;
+               int firstDiff = avgIBI - movingAvgIBI[9];
+               int secondDiff = avgIBI - movingAvgIBI[8];
+               int thirdDiff = avgIBI - movingAvgIBI[7];
+               // Choosing 50% Threshold of Difference between the last three IBI values with the average to indicate that the HRV is decreasing - which indicates stress
+               bool stressed = firstDiff / avgIBI > 0.3 && secondDiff / avgIBI > 0.3 && thirdDiff / avgIBI > 0.3;
+               if (stressed)
+               {
+                  stressLevel = "Stressed";
+                  Serial.println("STATUS: Stress detected");
+               }
+               else if (!stressed)
+               {
+                  stressLevel = "Okay";
+                  Serial.println("STATUS: Okay");
+               }
+               count = -1;
             }
-            count = -1;
-          }
 
-          movingAvgIBI[count] = IBI;
-          ++count;  
-//          sendMeasurements(BPM, IBI, temperature, stressLevel, DAP) 
+            movingAvgIBI[count] = IBI;
+            ++count;
+            //          sendMeasurements(BPM, IBI, temperature, stressLevel, DAP)
          }
       }
 
@@ -274,52 +340,52 @@ void loop()
 /**************************************************************************/
 /*                          Print Wifi Status                             */
 /**************************************************************************/
-//void printWiFiStatus() {
-//  // print the SSID of the network you're attached to:
-//  Serial.print("SSID: ");
-//  Serial.println(WiFi.SSID());
+// void printWiFiStatus() {
+//   // print the SSID of the network you're attached to:
+//   Serial.print("SSID: ");
+//   Serial.println(WiFi.SSID());
 //
-//  // print your WiFi shield's IP address:
-//  IPAddress ip = WiFi.localIP();
-//  Serial.print("IP Address: ");
-//  Serial.println(ip);
+//   // print your WiFi shield's IP address:
+//   IPAddress ip = WiFi.localIP();
+//   Serial.print("IP Address: ");
+//   Serial.println(ip);
 //
-//  // print the received signal strength:
-//  long rssi = WiFi.RSSI();
-//  Serial.print("signal strength (RSSI):");
-//  Serial.print(rssi);
-//  Serial.println(" dBm");
-//}
+//   // print the received signal strength:
+//   long rssi = WiFi.RSSI();
+//   Serial.print("signal strength (RSSI):");
+//   Serial.print(rssi);
+//   Serial.println(" dBm");
+// }
 
 /**************************************************************************/
 /*                 Send Measurements to the Server                        */
 /**************************************************************************/
-//void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap) {
-//  // Create post string
-//  DateTime time = rtc.now();
-//  String currentTime = String("DateTime::TIMESTAMP_FULL:\t")+time.timestamp(DateTime::TIMESTAMP_FULL);
-//  String query = "participant=" + participant + "&time=" + currentTime + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
-//    
-//  // While the client is available,
-//  while (client.available()) {
-//    // Make the HTTP POST request:
-//    client.println("POST /api/measurements?" + query);
-//    client.println("Host: https://localhost:8080");
-//    client.println("Connection: close");
-//    client.println();
-//  }
+// void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap) {
+//   // Create post string
+//   DateTime time = rtc.now();
+//   String currentTime = String("DateTime::TIMESTAMP_FULL:\t")+time.timestamp(DateTime::TIMESTAMP_FULL);
+//   String query = "participant=" + participant + "&time=" + currentTime + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 //
-//  // if the server's disconnected, stop the client:
-//  if (!client.connected()) {
-//    Serial.println();
-//    Serial.println("disconnecting from server.");
-//    client.stop();
-//  }
-//}
+//   // While the client is available,
+//   while (client.available()) {
+//     // Make the HTTP POST request:
+//     client.println("POST /add-data?" + query);
+//     client.println("Host: https://stress-free-dogs.herokuapp.com/");
+//     client.println("Connection: close");
+//     client.println();
+//   }
+//
+//   // if the server's disconnected, stop the client:
+//   if (!client.connected()) {
+//     Serial.println();
+//     Serial.println("disconnecting from server.");
+//     client.stop();
+//   }
+// }
 
 /**************************************************************************/
 /*                 Release Pheromones from Diffuser                       */
 /**************************************************************************/
-//void releasePheromones(){
+// void releasePheromones(){
 //
-//}
+// }

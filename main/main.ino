@@ -46,9 +46,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TMP117.h>
 #include <Wire.h>
-//#include "RTClib.h"
-//
-// RTC_DS1307 rtc;
+#include <IRremote.h> // Now using PIN 9
 
 /* Temperature */
 Adafruit_TMP117 tmp117;
@@ -106,7 +104,10 @@ String stressLevel = "Okay";
 bool DAP = false;
 int movingAvgIBI[10];
 int count = 0;
+
+/* Dog Appeasing Pheromones */
 bool DAP = false;
+IRsend irsend;
 
 /* WIFI SETUP */
 
@@ -311,14 +312,14 @@ void loop()
                {
                   stressLevel = "Stressed";
                   DAP = true;
-                  // releasePheromones();
+                  // togglePheromonesOnOff();
                   Serial.println("STATUS: Stress detected");
                }
                else if (!stressed)
                {
                   stressLevel = "Okay";
                   DAP = false;
-                  // stopPheromones();
+                  // togglePheromonesOnOff();
                   Serial.println("STATUS: Okay");
                }
                count = -1;
@@ -367,9 +368,7 @@ void loop()
 /**************************************************************************/
 // void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap) {
 //   // Create post string
-//   DateTime time = rtc.now();
-//   String currentTime = String("DateTime::TIMESTAMP_FULL:\t")+time.timestamp(DateTime::TIMESTAMP_FULL);
-//   String query = "participant=" + participant + "&time=" + currentTime + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
+//   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 //
 //   // While the client is available,
 //   while (client.available()) {
@@ -389,15 +388,8 @@ void loop()
 // }
 
 /**************************************************************************/
-/*                 Release Pheromones from Diffuser                       */
+/*                Turn Diffuser On & Off w/ Pheromones                    */
 /**************************************************************************/
-// void releasePheromones(){
-//
-// }
-
-/**************************************************************************/
-/*             Stop Release of Pheromones from Diffuser                   */
-/**************************************************************************/
-// void stopPheromones(){
-
+// void togglePheromonesOnOff(){
+//    irsend.sendNECRaw(0xFF00FF, 32); // The code 'FF00FF' is the received diffuser
 // }

@@ -117,15 +117,15 @@ char pass[] = ""; // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0; // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-// if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-// IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "www.google.com"; // name address for Google (using DNS)
+char server[] = "https://stress-free-dogs.herokuapp.com";
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient client;
+
+// Receiver Board for Diffuser
+uint8_t broadcastAddress[] = {0xF8, 0xF0, 0x05, 0xE2, 0xDD, 0xAE};
 
 void setup()
 {

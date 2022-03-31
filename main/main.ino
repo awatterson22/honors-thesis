@@ -116,12 +116,13 @@ char pass[] = ""; // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0; // your network key Index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;
-char server[] = "https://stress-free-dogs.herokuapp.com";
+char server1[] = "https://stress-free-dogs.herokuapp.com/";
+char server2[] = "http://192.168.1.1/"
 
-// Initialize the Ethernet client library
-// with the IP address and port of the server
-// that you want to connect to (port 80 is default for HTTP):
-WiFiClient client;
+    // Initialize the Ethernet client library
+    // with the IP address and port of the server
+    // that you want to connect to (port 80 is default for HTTP):
+    WiFiClient client;
 
 void setup()
 {
@@ -222,24 +223,6 @@ void setup()
    //    while (true);
    //  }
    //
-   //  // attempt to connect to WiFi network:
-   //  while (status != WL_CONNECTED) {
-   //    Serial.print("Attempting to connect to SSID: ");
-   //    Serial.println(ssid);
-   //    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-   //    status = WiFi.begin(ssid, pass);
-   //
-   //    // wait 10 seconds for connection:
-   //    delay(10000);
-   //  }
-   //  Serial.println("Connected to wifi");
-   //  printWiFiStatus();
-   //
-   //  Serial.println("\nStarting connection to server...");
-   //  // if you get a connection, report back via serial:
-   //  if (client.connect(server, 80)) {
-   //    Serial.println("connected to server");
-   //  }
 }
 
 void loop()
@@ -363,6 +346,25 @@ void loop()
 //   // Create post string
 //   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 //
+
+//  // attempt to connect to WiFi network:
+//  while (status != WL_CONNECTED) {
+//    Serial.print("Attempting to connect to SSID: ");
+//    Serial.println(ssid);
+//    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+//    status = WiFi.begin(ssid, pass);
+
+//    // wait 10 seconds for connection:
+//    delay(10000);
+//  }
+//  Serial.println("Connected to wifi");
+//  printWiFiStatus();
+
+//  Serial.println("\nStarting connection to server1...");
+//  // if you get a connection, report back via serial:
+//  if (client.connect(server1, 80)) {
+//    Serial.println("connected to server1");
+//  }
 //   // While the client is available,
 //   while (client.available()) {
 //     // Make the HTTP POST request:
@@ -384,5 +386,39 @@ void loop()
 /*                Turn Diffuser On & Off w/ Pheromones                    */
 /**************************************************************************/
 // void togglePheromonesOnOff(){
-//    irsend.sendNECRaw(0xFF00FF, 32); // The code 'FF00FF' is the received diffuser
+//    //  // attempt to connect to WiFi network:
+//  while (status != WL_CONNECTED) {
+//    Serial.print("Attempting to connect to SSID: ");
+//    Serial.println(ssid);
+//    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+//    status = WiFi.begin(ssid, pass);
+//
+//    // wait 10 seconds for connection:
+//    delay(10000);
+//  }
+//  Serial.println("Connected to wifi");
+//  printWiFiStatus();
+//
+//  Serial.println("\nStarting connection to server...");
+//  // if you get a connection, report back via serial:
+//  if (client.connect(server2, 80)) {
+//    Serial.println("connected to server2");
+//  }
+
+//   // While the client is available,
+//   while (client.available()) {
+//     // Make the HTTP GET request:
+//     client.println("GET /T");
+//     client.println("Host: http://192.168.1.1/");
+//     client.println("Connection: close");
+//     client.println();
+//   }
+//
+//   // if the server's disconnected, stop the client:
+//   if (!client.connected()) {
+//     Serial.println();
+//     Serial.println("disconnecting from server.");
+//     client.stop();
+//   }
+
 // }

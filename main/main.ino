@@ -46,7 +46,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TMP117.h>
 #include <Wire.h>
-#include <IRremote.h> // Now using PIN 9
 
 /* Temperature */
 Adafruit_TMP117 tmp117;
@@ -103,11 +102,11 @@ const String participant = "Cooper";
 String stressLevel = "Okay";
 bool DAP = false;
 int movingAvgIBI[10];
+int baselineIBI = 471;
 int count = 0;
 
 /* Dog Appeasing Pheromones */
 bool DAP = false;
-IRsend irsend;
 
 /* WIFI SETUP */
 
@@ -123,9 +122,6 @@ char server[] = "https://stress-free-dogs.herokuapp.com";
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient client;
-
-// Receiver Board for Diffuser
-uint8_t broadcastAddress[] = {0xF8, 0xF0, 0x05, 0xE2, 0xDD, 0xAE};
 
 void setup()
 {
@@ -294,7 +290,7 @@ void loop()
 
             Serial.print("Heart Rate: ");
             Serial.println(BPM);
-            if (count == 9)
+            if (count == 10)
             {
                // Add moving average detection for IBI here to indicate stress
                int sumIBI = 0;
@@ -303,11 +299,8 @@ void loop()
                   sumIBI += movingAvgIBI[i];
                }
                int avgIBI = sumIBI / 10;
-               int firstDiff = avgIBI - movingAvgIBI[9];
-               int secondDiff = avgIBI - movingAvgIBI[8];
-               int thirdDiff = avgIBI - movingAvgIBI[7];
-               // Choosing 50% Threshold of Difference between the last three IBI values with the average to indicate that the HRV is decreasing - which indicates stress
-               bool stressed = firstDiff / avgIBI > 0.3 && secondDiff / avgIBI > 0.3 && thirdDiff / avgIBI > 0.3 && temp.temperature < 35 && temp.temperature > 28;
+               Serial.println(avgIBI);
+               bool stressed = avgIBI < baselineIBI && temp.temperature < 35 && temp.temperature > 28;
                if (stressed)
                {
                   stressLevel = "Stressed";

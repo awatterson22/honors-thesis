@@ -223,6 +223,19 @@ void setup()
    //    while (true);
    //  }
    //
+
+   //  //Attempt to connect to WiFi network:
+   //  while (status != WL_CONNECTED) {
+   //    Serial.print("Attempting to connect to SSID: ");
+   //    Serial.println(ssid);
+   //    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+   //    status = WiFi.begin(ssid, pass);
+
+   //    // wait 10 seconds for connection:
+   //    delay(10000);
+   //  }
+   //  Serial.println("Connected to wifi");
+   //  printWiFiStatus();
 }
 
 void loop()
@@ -347,26 +360,13 @@ void loop()
 //   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 //
 
-//  // attempt to connect to WiFi network:
-//  while (status != WL_CONNECTED) {
-//    Serial.print("Attempting to connect to SSID: ");
-//    Serial.println(ssid);
-//    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-//    status = WiFi.begin(ssid, pass);
-
-//    // wait 10 seconds for connection:
-//    delay(10000);
-//  }
-//  Serial.println("Connected to wifi");
-//  printWiFiStatus();
-
 //  Serial.println("\nStarting connection to server1...");
 //  // if you get a connection, report back via serial:
 //  if (client.connect(server1, 80)) {
 //    Serial.println("connected to server1");
 //  }
-//   // While the client is available,
-//   while (client.available()) {
+//   // If the client is available,
+//   if (client.available()) {
 //     // Make the HTTP POST request:
 //     client.println("POST /add-data?" + query);
 //     client.println("Host: https://stress-free-dogs.herokuapp.com/");
@@ -386,27 +386,15 @@ void loop()
 /*                Turn Diffuser On & Off w/ Pheromones                    */
 /**************************************************************************/
 // void togglePheromonesOnOff(){
-//    //  // attempt to connect to WiFi network:
-//  while (status != WL_CONNECTED) {
-//    Serial.print("Attempting to connect to SSID: ");
-//    Serial.println(ssid);
-//    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-//    status = WiFi.begin(ssid, pass);
-//
-//    // wait 10 seconds for connection:
-//    delay(10000);
-//  }
-//  Serial.println("Connected to wifi");
-//  printWiFiStatus();
-//
+
 //  Serial.println("\nStarting connection to server...");
 //  // if you get a connection, report back via serial:
 //  if (client.connect(server2, 80)) {
 //    Serial.println("connected to server2");
 //  }
 
-//   // While the client is available,
-//   while (client.available()) {
+//   // If the client is available,
+//   if (client.available()) {
 //     // Make the HTTP GET request:
 //     client.println("GET /T");
 //     client.println("Host: http://192.168.1.1/");

@@ -147,5 +147,6 @@ void togglePheromonesOnOff()
 {
   mySender.send(NEC, 0xFF00FF, 0); // NEC Diffuser button=0xFF00FF
   delay(2000);
+  Serial.println(" ");
   Serial.println(F("Sent signal."));
 }

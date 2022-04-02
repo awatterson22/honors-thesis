@@ -1,3 +1,7 @@
 .vscode
 
 .DS_Store
+
+diffuser/arduino_secrets.h
+
+main/arduino_secrets.h

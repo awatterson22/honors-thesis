@@ -46,6 +46,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TMP117.h>
 #include <Wire.h>
+#include "arduino_secrets.h"
 
 /* Temperature */
 Adafruit_TMP117 tmp117;
@@ -100,7 +101,6 @@ float temperature;
 /* HRV ANALYSIS */
 const String participant = "Cooper";
 String stressLevel = "Okay";
-bool DAP = false;
 int movingAvgIBI[10];
 int baselineIBI = 471;
 int count = 0;
@@ -110,19 +110,17 @@ bool DAP = false;
 
 /* WIFI SETUP */
 
-///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = ""; // your network SSID (name)
-char pass[] = ""; // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0; // your network key Index number (needed only for WEP)
+char ssid[] = SECRET_SSID;   // your network SSID (name)
+char pass[] = SECRET_PASS;   // your network password (use for WPA)
+int status = WL_IDLE_STATUS; // the WiFi radio's status
 
-int status = WL_IDLE_STATUS;
-char server1[] = "https://stress-free-dogs.herokuapp.com/";
-char server2[] = "http://192.168.1.1/"
+char server1[] = "https://stress-free-dogs.herokuapp.com";
+char server2[] = "http://10.0.0.136";
 
-    // Initialize the Ethernet client library
-    // with the IP address and port of the server
-    // that you want to connect to (port 80 is default for HTTP):
-    WiFiClient client;
+// Initialize the Ethernet client library
+// with the IP address and port of the server
+// that you want to connect to (port 80 is default for HTTP):
+WiFiClient client;
 
 void setup()
 {
@@ -180,62 +178,31 @@ void setup()
    }
    Serial.println("TMP117 Found!");
 
-   // Set the enable flag below to see how the low temp limit can be used as a
-   // hysteresis value that defines the acceptable range for the temperature values where
-   // the high temp alert is not active
-   // tmp117.thermAlertModeEnabled(true);
-   Serial.print("Therm mode enabled: ");
-   if (tmp117.thermAlertModeEnabled())
+   // Configure pins for Adafruit ATWINC1500 Feather
+   WiFi.setPins(8, 7, 4, 2);
+
+   // check for the presence of the shield:
+   if (WiFi.status() == WL_NO_SHIELD)
    {
-      Serial.println("True");
-   }
-   else
-   {
-      Serial.println("False");
+      Serial.println("WiFi shield not present");
+      // don't continue:
+      while (true)
+         ;
    }
 
-   // You may need to adjust these thresholds to fit the temperature range of where the test is
-   // being run to be able to see the alert status change.
-   tmp117.setHighThreshold(35.0);
-   Serial.print("High threshold: ");
-   Serial.println(tmp117.getHighThreshold(), 1);
-   tmp117.setLowThreshold(28.5);
-   Serial.print("Low threshold: ");
-   Serial.println(tmp117.getLowThreshold(), 1);
-
-   // tmp117.interruptsActiveLow(false);
-   if (tmp117.interruptsActiveLow())
+   // Attempt to connect to WiFi network:
+   while (status != WL_CONNECTED)
    {
-      Serial.println("Alerts are active when the INT pin is LOW");
+      Serial.print("Attempting to connect to SSID: ");
+      Serial.println(ssid);
+      // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+      status = WiFi.begin(ssid, pass);
+
+      // wait 10 seconds for connection:
+      delay(10000);
    }
-   else
-   {
-      Serial.println("Alerts are active when the INT pin is HIGH");
-   }
-
-   //   //Configure pins for Adafruit ATWINC1500 Feather
-   //   WiFi.setPins(8,7,4,2);
-   //
-   //   // check for the presence of the shield:
-   //  if (WiFi.status() == WL_NO_SHIELD) {
-   //    Serial.println("WiFi shield not present");
-   //    // don't continue:
-   //    while (true);
-   //  }
-   //
-
-   //  //Attempt to connect to WiFi network:
-   //  while (status != WL_CONNECTED) {
-   //    Serial.print("Attempting to connect to SSID: ");
-   //    Serial.println(ssid);
-   //    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-   //    status = WiFi.begin(ssid, pass);
-
-   //    // wait 10 seconds for connection:
-   //    delay(10000);
-   //  }
-   //  Serial.println("Connected to wifi");
-   //  printWiFiStatus();
+   Serial.println("Connected to wifi");
+   printWiFiStatus();
 }
 
 void loop()
@@ -301,14 +268,14 @@ void loop()
                {
                   stressLevel = "Stressed";
                   DAP = true;
-                  // togglePheromonesOnOff();
+                  togglePheromonesOnOff();
                   Serial.println("STATUS: Stress detected");
                }
                else if (!stressed)
                {
                   stressLevel = "Okay";
                   DAP = false;
-                  // togglePheromonesOnOff();
+                  togglePheromonesOnOff();
                   Serial.println("STATUS: Okay");
                }
                count = -1;
@@ -316,7 +283,7 @@ void loop()
 
             movingAvgIBI[count] = IBI;
             ++count;
-            // sendMeasurements(BPM, IBI, temp.temperature, stressLevel, DAP)
+            sendMeasurements(BPM, IBI, temp.temperature, stressLevel, DAP);
          }
       }
 
@@ -335,78 +302,85 @@ void loop()
 /**************************************************************************/
 /*                          Print Wifi Status                             */
 /**************************************************************************/
-// void printWiFiStatus() {
-//   // print the SSID of the network you're attached to:
-//   Serial.print("SSID: ");
-//   Serial.println(WiFi.SSID());
-//
-//   // print your WiFi shield's IP address:
-//   IPAddress ip = WiFi.localIP();
-//   Serial.print("IP Address: ");
-//   Serial.println(ip);
-//
-//   // print the received signal strength:
-//   long rssi = WiFi.RSSI();
-//   Serial.print("signal strength (RSSI):");
-//   Serial.print(rssi);
-//   Serial.println(" dBm");
-// }
+void printWiFiStatus()
+{
+   // print the SSID of the network you're attached to:
+   Serial.print("SSID: ");
+   Serial.println(WiFi.SSID());
+
+   // print your WiFi shield's IP address:
+   IPAddress ip = WiFi.localIP();
+   Serial.print("IP Address: ");
+   Serial.println(ip);
+
+   // print the received signal strength:
+   long rssi = WiFi.RSSI();
+   Serial.print("signal strength (RSSI):");
+   Serial.print(rssi);
+   Serial.println(" dBm");
+}
 
 /**************************************************************************/
 /*                 Send Measurements to the Server                        */
 /**************************************************************************/
-// void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap) {
-//   // Create post string
-//   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
-//
+void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap)
+{
+   // Create post string
+   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 
-//  Serial.println("\nStarting connection to server1...");
-//  // if you get a connection, report back via serial:
-//  if (client.connect(server1, 80)) {
-//    Serial.println("connected to server1");
-//  }
-//   // If the client is available,
-//   if (client.available()) {
-//     // Make the HTTP POST request:
-//     client.println("POST /add-data?" + query);
-//     client.println("Host: https://stress-free-dogs.herokuapp.com/");
-//     client.println("Connection: close");
-//     client.println();
-//   }
-//
-//   // if the server's disconnected, stop the client:
-//   if (!client.connected()) {
-//     Serial.println();
-//     Serial.println("disconnecting from server.");
-//     client.stop();
-//   }
-// }
+   Serial.println("\nStarting connection to server1...");
+   // if you get a connection, report back via serial:
+   if (client.connect(server1, 80))
+   {
+      Serial.println("connected to server1");
+   }
+   // If the client is available,
+   if (client.available())
+   {
+      // Make the HTTP POST request:
+      client.println("POST /add-data?" + query);
+      client.println("Host: https://stress-free-dogs.herokuapp.com");
+      client.println("Connection: close");
+      client.println();
+   }
+
+   // if the server's disconnected, stop the client:
+   if (!client.connected())
+   {
+      Serial.println();
+      Serial.println("disconnecting from server.");
+      client.stop();
+   }
+}
 
 /**************************************************************************/
 /*                Turn Diffuser On & Off w/ Pheromones                    */
 /**************************************************************************/
-// void togglePheromonesOnOff(){
+void togglePheromonesOnOff()
+{
 
-//  Serial.println("\nStarting connection to server...");
-//  // if you get a connection, report back via serial:
-//  if (client.connect(server2, 80)) {
-//    Serial.println("connected to server2");
-//  }
+   Serial.println("\nStarting connection to server...");
+   // if you get a connection, report back via serial:
+   if (client.connect(server2, 80))
+   {
+      Serial.println("connected to server2");
+   }
 
-//   // If the client is available,
-//   if (client.available()) {
-//     // Make the HTTP GET request:
-//     client.println("GET /T");
-//     client.println("Host: http://192.168.1.1/");
-//     client.println("Connection: close");
-//     client.println();
-//   }
-//
-//   // if the server's disconnected, stop the client:
-//   if (!client.connected()) {
-//     Serial.println();
-//     Serial.println("disconnecting from server.");
-//     client.stop();
-//   }
+   // If the client is available,
+   if (client.available())
+   {
+      // Make the HTTP GET request:
+      client.println("GET /T");
+      client.println("Host: http://192.168.1.1");
+      client.println("Connection: close");
+      client.println();
+   }
 
-// }
+   // if the server's disconnected, stop the client:
+   if (!client.connected())
+   {
+      Serial.println();
+      Serial.println("disconnecting from server.");
+      client.stop();
+   }
+}

@@ -39,7 +39,6 @@
 */
 #define USE_ARDUINO_INTERRUPTS false
 #include <PulseSensorPlayground.h>
-#include <movingAvg.h>
 #include <SPI.h>
 #include <WiFi101.h>
 #include <Adafruit_SSD1306.h>
@@ -114,8 +113,8 @@ char ssid[] = SECRET_SSID;   // your network SSID (name)
 char pass[] = SECRET_PASS;   // your network password (use for WPA)
 int status = WL_IDLE_STATUS; // the WiFi radio's status
 
-char server1[] = "https://stress-free-dogs.herokuapp.com";
-char server2[] = "http://10.0.0.136";
+char server1[] = "stress-free-dogs.herokuapp.com";
+char server2[] = "10.0.0.136";
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
@@ -124,6 +123,9 @@ WiFiClient client;
 
 void setup()
 {
+   // Configure pins for Adafruit ATWINC1500 Feather
+   WiFi.setPins(8, 7, 4, 2);
+
    /*
       Use 115200 baud because that's what the Processing Sketch expects to read,
       and because that speed provides about 11 bytes per millisecond.
@@ -177,9 +179,6 @@ void setup()
       }
    }
    Serial.println("TMP117 Found!");
-
-   // Configure pins for Adafruit ATWINC1500 Feather
-   WiFi.setPins(8, 7, 4, 2);
 
    // check for the presence of the shield:
    if (WiFi.status() == WL_NO_SHIELD)
@@ -268,17 +267,18 @@ void loop()
                {
                   stressLevel = "Stressed";
                   DAP = true;
-//                  togglePheromonesOnOff();
+                  togglePheromonesOnOff();
                   Serial.println("Pheromone Diffuser On");
                   Serial.println("STATUS: Stress detected");
                }
                else if (!stressed)
                {
                   stressLevel = "Okay";
-                  // Only toggle the pheromones off if the diffuser was previously on                  
-                  if (DAP) {
-//                    togglePheromonesOnOff();
-                      Serial.println("Pheromone Diffuser Off");
+                  // Only toggle the pheromones off if the diffuser was previously on
+                  if (DAP)
+                  {
+                     togglePheromonesOnOff();
+                     Serial.println("Pheromone Diffuser Off");
                   }
                   DAP = false;
                   Serial.println("STATUS: Okay");
@@ -330,21 +330,17 @@ void printWiFiStatus()
 /**************************************************************************/
 void sendMeasurements(int heartRate, int ibi, float temperature, String stressLevel, bool dap)
 {
-   // Create post string
-   String query = "participant=" + participant + "&time=" + "" + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
+   // Create query string
+   String query = "participant=" + participant + "&heartRate=" + heartRate + "&ibi=" + ibi + "&temperature=" + temperature + "&stressLevel=" + stressLevel + "&dap=" + dap;
 
-   Serial.println("\nStarting connection to server1...");
+   Serial.println("\nStarting connection to Server 1...");
    // if you get a connection, report back via serial:
    if (client.connect(server1, 80))
    {
-      Serial.println("connected to server1");
-   }
-   // If the client is available,
-   if (client.available())
-   {
-      // Make the HTTP POST request:
-      client.println("POST /add-data?" + query);
-      client.println("Host: https://stress-free-dogs.herokuapp.com");
+      Serial.println("Connected to Server 1");
+      // Make the HTTP GET request:
+      client.println("GET /add-data?" + query + " HTTP/1.1");
+      client.println("Host: stress-free-dogs.herokuapp.com");
       client.println("Connection: close");
       client.println();
    }
@@ -353,7 +349,7 @@ void sendMeasurements(int heartRate, int ibi, float temperature, String stressLe
    if (!client.connected())
    {
       Serial.println();
-      Serial.println("disconnecting from server.");
+      Serial.println("Disconnecting from Server 1.");
       client.stop();
    }
 }
@@ -364,19 +360,14 @@ void sendMeasurements(int heartRate, int ibi, float temperature, String stressLe
 void togglePheromonesOnOff()
 {
 
-   Serial.println("\nStarting connection to server...");
+   Serial.println("\nStarting connection to Server 2...");
    // if you get a connection, report back via serial:
    if (client.connect(server2, 80))
    {
-      Serial.println("connected to server2");
-   }
-
-   // If the client is available,
-   if (client.available())
-   {
+      Serial.println("Connected to Server 2");
       // Make the HTTP GET request:
-      client.println("GET /T");
-      client.println("Host: http://10.0.0.136");
+      client.println("GET /T  HTTP/1.1");
+      client.println("Host: 10.0.0.136");
       client.println("Connection: close");
       client.println();
    }
@@ -385,7 +376,7 @@ void togglePheromonesOnOff()
    if (!client.connected())
    {
       Serial.println();
-      Serial.println("disconnecting from server.");
+      Serial.println("Disconnecting from Server 2.");
       client.stop();
    }
 }

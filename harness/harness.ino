@@ -268,14 +268,19 @@ void loop()
                {
                   stressLevel = "Stressed";
                   DAP = true;
-                  togglePheromonesOnOff();
+//                  togglePheromonesOnOff();
+                  Serial.println("Pheromone Diffuser On");
                   Serial.println("STATUS: Stress detected");
                }
                else if (!stressed)
                {
                   stressLevel = "Okay";
+                  // Only toggle the pheromones off if the diffuser was previously on                  
+                  if (DAP) {
+//                    togglePheromonesOnOff();
+                      Serial.println("Pheromone Diffuser Off");
+                  }
                   DAP = false;
-                  togglePheromonesOnOff();
                   Serial.println("STATUS: Okay");
                }
                count = -1;
@@ -371,7 +376,7 @@ void togglePheromonesOnOff()
    {
       // Make the HTTP GET request:
       client.println("GET /T");
-      client.println("Host: http://192.168.1.1");
+      client.println("Host: http://10.0.0.136");
       client.println("Connection: close");
       client.println();
    }

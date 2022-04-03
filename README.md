@@ -2,12 +2,12 @@
 
 The primary purpose of this project is to measure stress levels using heart rate variability and
 temperature in dogs and test the effectiveness of Dog Appeasing Pheromones on stress by
-releasing them from a collar and/or harness when they are above a specific threshold that
+releasing them from a wall plug-in diffuser when they are above a specific threshold that
 indicates stress.
 
 ## Installation
 
-1. Install Arduino IDE on your computer and add the Pulse Sensor Playground Library
+1. Install Arduino IDE on your computer and add the necessary libraries
 
 ## Usage with Adafruit Feather
 

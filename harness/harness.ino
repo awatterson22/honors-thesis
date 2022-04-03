@@ -361,12 +361,11 @@ void togglePheromonesOnOff()
 {
 
    Serial.println("\nStarting connection to Server 2...");
-   // if you get a connection, report back via serial:
    if (client.connect(server2, 80))
    {
       Serial.println("Connected to Server 2");
       // Make the HTTP GET request:
-      client.println("GET /T  HTTP/1.1");
+      client.println("GET /T");
       client.println("Host: 10.0.0.136");
       client.println("Connection: close");
       client.println();

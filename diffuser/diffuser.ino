@@ -29,7 +29,6 @@ char ssid[] = SECRET_SSID;   // your network SSID (name)
 char pass[] = SECRET_PASS;   // your network password (use for WPA)
 int status = WL_IDLE_STATUS; // the WiFi radio's status
 
-int led = LED_BUILTIN;
 WiFiServer server(80);
 
 IRsend mySender;

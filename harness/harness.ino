@@ -114,7 +114,7 @@ char pass[] = SECRET_PASS;   // your network password (use for WPA)
 int status = WL_IDLE_STATUS; // the WiFi radio's status
 
 char server1[] = "stress-free-dogs.herokuapp.com";
-char server2[] = "10.0.0.136";
+IPAddress server2(10, 0, 0, 136);
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
@@ -366,7 +366,7 @@ void togglePheromonesOnOff()
       Serial.println("Connected to Server 2");
       // Make the HTTP GET request:
       client.println("GET /T");
-      client.println("Host: 10.0.0.136");
+      client.println("Host: http://10.0.0.136");
       client.println("Connection: close");
       client.println();
    }

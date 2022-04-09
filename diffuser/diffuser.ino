@@ -108,7 +108,7 @@ void loop()
           currentLine += c; // add it to the end of the currentLine
         }
 
-        // Check to see if the client request was "GET /H" or "GET /L":
+        // Check to see if the client request was "GET /T":
         if (currentLine.endsWith("GET /T"))
         {
           togglePheromonesOnOff();
@@ -117,7 +117,7 @@ void loop()
     }
     // close the connection:
     client.stop();
-    Serial.println("client disonnected");
+    Serial.println("client disconnected");
   }
 }
 
